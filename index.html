@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#F4F5F9" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="SAT Launchpad" />
+<title>SAT Launchpad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#F4F5F9;--surface:#FFFFFF;--ink:#191D2E;--muted:#727A93;--line:#E6E9F1;
+    --accent:#4F46E5;--accent-soft:#EEF0FE;--win:#0FA37F;--win-soft:#E2F5EF;
+    --c-content:#E1543E;--c-careless:#EE9A2E;--c-misread:#8B5CF6;--c-timing:#2E92D6;
+    --shadow:0 1px 2px rgba(25,29,46,.04),0 8px 24px rgba(25,29,46,.06);--radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
+  .num{font-family:'Space Grotesk',sans-serif;font-feature-settings:"tnum";}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 16px calc(80px + env(safe-area-inset-bottom));}
+
+  header.top{position:sticky;top:0;z-index:20;background:rgba(244,245,249,.88);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);}
+  .top-inner{max-width:1080px;margin:0 auto;padding:max(13px,env(safe-area-inset-top)) 16px 13px;display:flex;align-items:center;justify-content:space-between;gap:14px;}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0;}
+  .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#7C75F2);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 4px 12px rgba(79,70,229,.3);}
+  .brand h1{font-family:'Space Grotesk';font-size:18px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;}
+  .brand .sub{font-size:12px;color:var(--muted);margin-top:-2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .io-btns{display:flex;gap:8px;flex:0 0 auto;}
+  .io-btns button{font-size:12.5px;font-weight:500;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer;transition:all .15s;}
+  .io-btns button:active{color:var(--ink);}
+
+  nav.tabs{display:flex;gap:4px;overflow-x:auto;padding:12px 0 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{font-size:14px;font-weight:500;white-space:nowrap;color:var(--muted);background:transparent;border:none;border-radius:10px;padding:10px 15px;cursor:pointer;transition:all .15s;min-height:42px;}
+  nav.tabs button.active{background:var(--ink);color:#fff;}
+
+  .panel{display:none;animation:rise .3s cubic-bezier(.2,.7,.3,1);}
+  .panel.show{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .card.pad{padding:20px;}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);}
+  h2.sec{font-family:'Space Grotesk';font-size:22px;font-weight:600;letter-spacing:-.01em;margin-bottom:3px;margin-top:2px;}
+  .sec-note{color:var(--muted);font-size:14px;margin-bottom:16px;line-height:1.55;}
+
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px;}
+  @media(max-width:720px){.hero{grid-template-columns:1fr}}
+  .ring-card{display:flex;gap:20px;align-items:center;padding:22px;}
+  .ring{position:relative;width:118px;height:118px;flex:0 0 auto;}
+  .ring .lbl{position:absolute;inset:0;display:grid;place-content:center;text-align:center;}
+  .ring .lbl b{font-family:'Space Grotesk';font-size:28px;font-weight:600;line-height:1;display:block;}
+  .ring .lbl span{font-size:11px;color:var(--muted);}
+  .ring-meta h3{font-family:'Space Grotesk';font-size:16px;font-weight:600;margin-bottom:2px;}
+  .ring-meta p{font-size:13px;color:var(--muted);}
+  .scoreline{display:flex;gap:16px;margin-top:13px;flex-wrap:wrap;}
+  .scoreline .s b{font-family:'Space Grotesk';font-size:20px;font-weight:600;display:block;line-height:1.1;}
+  .scoreline .s span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .count-card{padding:22px;display:flex;flex-direction:column;justify-content:center;}
+  .count-row{display:flex;gap:24px;flex-wrap:wrap;}
+  .count b{font-family:'Space Grotesk';font-size:38px;font-weight:600;line-height:.95;display:block;}
+  .count.warn b{color:var(--c-content)}
+  .count .k{font-size:12px;color:var(--muted);margin-top:5px;}
+  .dates{margin-top:16px;border-top:1px solid var(--line);padding-top:13px;display:flex;flex-direction:column;gap:9px;}
+  .dates label{font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .dates input{font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fafbfd;max-width:165px;}
+
+  .chart-card{padding:20px;margin-bottom:14px;}
+  .chart-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;gap:10px;}
+  .leg{display:flex;gap:13px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
+  .leg i{display:inline-block;width:16px;height:0;border-top:2px solid;vertical-align:middle;margin-right:5px;}
+  #chart{width:100%;height:230px;display:block;}
+  .empty{text-align:center;color:var(--muted);padding:28px 10px;font-size:14px;line-height:1.6;}
+
+  .mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  @media(max-width:720px){.mini-stats{grid-template-columns:repeat(2,1fr)}}
+  .mini{padding:16px 18px;}
+  .mini b{font-family:'Space Grotesk';font-size:25px;font-weight:600;display:block;}
+  .mini .k{font-size:12.5px;color:var(--muted);margin-top:2px;}
+
+  label.fl{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.03em;text-transform:uppercase;display:block;margin-bottom:5px;}
+  input,select,textarea{font-family:'Inter';font-size:16px;color:var(--ink);background:#fafbfd;border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;transition:border .15s;width:100%;}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);background:#fff;}
+  .btn{font-family:'Inter';font-size:15px;font-weight:600;color:#fff;background:var(--accent);border:none;border-radius:10px;padding:12px 18px;cursor:pointer;transition:filter .15s,transform .05s;min-height:46px;}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent-soft);}
+  .btn.sm{padding:9px 14px;font-size:14px;min-height:0;}
+  .btn.full{width:100%}
+
+  .addbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end;background:#fafbfd;border:1px dashed var(--line);border-radius:14px;padding:16px;}
+  .addbar .wide{grid-column:1/-1}
+  .addbar .act{grid-column:1/-1;display:flex;justify-content:flex-end;}
+  @media(max-width:560px){.addbar .act .btn{width:100%}}
+
+  .list{margin-top:16px;display:flex;flex-direction:column;}
+  .item{display:flex;gap:12px;align-items:flex-start;padding:14px 4px;border-bottom:1px solid var(--line);}
+  .item:last-child{border-bottom:none}
+  .item .body{flex:1;min-width:0;}
+  .item .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .item .title{font-weight:600;font-size:15px;}
+  .item .meta{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .item .cmt{font-size:13.5px;color:var(--ink);margin-top:6px;background:#f7f8fc;border-radius:9px;padding:8px 11px;line-height:1.5;}
+  .date-tag{font-size:12px;color:var(--muted);font-family:'Space Grotesk';white-space:nowrap;}
+  .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;letter-spacing:.02em;white-space:nowrap;}
+  .b-study{background:var(--accent-soft);color:var(--accent)}
+  .b-sectest{background:#FFF3E0;color:#C57A12}
+  .b-full{background:var(--win-soft);color:var(--win)}
+  .scorebig{font-family:'Space Grotesk';font-weight:600;font-size:19px;white-space:nowrap;}
+  .del{background:none;border:none;color:#c2c8d6;cursor:pointer;font-size:22px;line-height:1;padding:4px 6px;border-radius:6px;flex:0 0 auto;}
+  .del:active{color:var(--c-content);}
+
+  .filters{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0;}
+  .chip{font-size:13px;font-weight:500;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:8px 14px;cursor:pointer;transition:all .15s;min-height:38px;}
+  .chip.on{color:#fff;background:var(--ink);border-color:var(--ink);}
+  .cat-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px;flex:0 0 auto;}
+  .statusbtn{font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;}
+  .statusbtn.done{background:var(--win-soft);color:var(--win);border-color:transparent;}
+
+  /* Sections */
+  .seccards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+  @media(max-width:560px){.seccards{grid-template-columns:1fr}}
+  .seccard{padding:20px;}
+  .seccard h3{font-family:'Space Grotesk';font-size:16px;font-weight:600;margin-bottom:10px;}
+  .seccard .big{display:flex;align-items:baseline;gap:10px;}
+  .seccard .big b{font-family:'Space Grotesk';font-size:34px;font-weight:600;line-height:1;}
+  .delta{font-size:13px;font-weight:600;}
+  .delta.up{color:var(--win)}.delta.down{color:var(--c-content)}.delta.flat{color:var(--muted)}
+  .seccard .sub{font-size:12.5px;color:var(--muted);margin-top:6px;}
+  .domgroup{margin-bottom:8px;}
+  .domgroup .gh{font-family:'Space Grotesk';font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 8px;}
+  .domrow{display:grid;grid-template-columns:1fr auto;gap:6px 14px;padding:11px 2px;border-bottom:1px solid var(--line);align-items:center;}
+  .domrow .dn{font-weight:600;font-size:14.5px;}
+  .domrow .dm{font-size:12.5px;color:var(--muted);}
+  .dbar{grid-column:1/-1;height:6px;background:var(--line);border-radius:4px;overflow:hidden;}
+  .dbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7C75F2);border-radius:4px;transition:width .4s;}
+  .domstat{font-family:'Space Grotesk';font-weight:600;font-size:14px;text-align:right;white-space:nowrap;}
+
+  /* Plan */
+  .week{margin-bottom:14px;}
+  .week-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .week-num{font-family:'Space Grotesk';font-weight:700;font-size:13px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:5px 10px;flex:0 0 auto;}
+  .week-head h3{font-family:'Space Grotesk';font-size:16px;font-weight:600;}
+  .week-head .dr{font-size:12.5px;color:var(--muted);margin-left:auto;}
+  .task{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .task:last-child{border-bottom:none}
+  .task .box{width:22px;height:22px;border:2px solid #cdd3e1;border-radius:6px;flex:0 0 auto;margin-top:1px;display:grid;place-items:center;transition:all .15s;}
+  .task.done .box{background:var(--win);border-color:var(--win);}
+  .task.done .box svg{opacity:1}
+  .task .box svg{opacity:0}
+  .task .txt{font-size:14.5px;}
+  .task.done .txt{color:var(--muted);text-decoration:line-through;text-decoration-color:#c7ccd9;}
+  .wbar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:2px;}
+  .wbar i{display:block;height:100%;background:var(--win);border-radius:3px;transition:width .4s;}
+
+  /* Resources */
+  .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:620px){.res-grid{grid-template-columns:1fr}}
+  .res{display:block;padding:15px 16px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:13px;transition:all .15s;}
+  .res:active{border-color:var(--accent);}
+  .res .rtop{display:flex;align-items:center;gap:12px;}
+  .res .ri{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;flex:0 0 auto;}
+  .res b{font-size:14.5px;display:block;}
+  .res .rurl{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .res .rcmt{font-size:13px;color:var(--ink);margin-top:10px;line-height:1.5;}
+  .res-del{margin-left:auto;color:#c2c8d6;font-size:20px;}
+
+  #notes{width:100%;min-height:360px;resize:vertical;line-height:1.7;font-size:16px;padding:16px;}
+  .saved-tag{font-size:12px;color:var(--win);opacity:0;transition:opacity .3s;}
+  .saved-tag.show{opacity:1}
+
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:28px;line-height:1.6;}
+  .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-size:13.5px;padding:12px 20px;border-radius:11px;opacity:0;pointer-events:none;transition:all .25s;z-index:50;max-width:90%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  pre{white-space:pre-wrap;word-break:break-word;}
+  /* Exam reference */
+  .exam-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+  @media(max-width:720px){.exam-sum{grid-template-columns:repeat(2,1fr)}}
+  .infocard{padding:20px;margin-bottom:14px;}
+  .infocard h3{font-family:'Space Grotesk';font-size:17px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .infocard .lede{font-size:13.5px;color:var(--muted);margin:6px 0 14px;line-height:1.55;}
+  .kv{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .kv:last-child{border-bottom:none}
+  .kv .k{flex:0 0 120px;color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  .kv .v{flex:1}
+  .dom{padding:11px 0;border-bottom:1px solid var(--line);}
+  .dom:last-child{border-bottom:none}
+  .dom b{font-size:14.5px}
+  .dom p{font-size:13.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+  .focus{background:var(--accent-soft);border-radius:11px;padding:13px 15px;font-size:13.5px;line-height:1.55;margin-top:14px;}
+  .focus b{color:var(--accent)}
+  .ladder .lr{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .ladder .lr:last-child{border-bottom:none}
+  .ladder .lr b{font-family:'Space Grotesk';font-size:16px}
+  .ladder .lr span{color:var(--muted);font-size:13px}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v6c0 5 3.5 8 9 9 5.5-1 9-4 9-9V7l-9-5z" fill="#fff" opacity=".25"/><path d="M12 2L3 7l9 5 9-5-9-5z" fill="#fff"/><path d="M8 11v4c0 1.5 1.8 2.5 4 2.5s4-1 4-2.5v-4" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+      <div style="min-width:0"><h1>SAT Launchpad</h1><div class="sub" id="brand-sub">Emi's prep</div></div>
+    </div>
+    <div class="io-btns">
+      <button id="export">Export</button>
+      <button id="import">Import</button>
+      <input type="file" id="file" accept="application/json" hidden />
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button data-t="dash" class="active">Dashboard</button>
+    <button data-t="log">Log</button>
+    <button data-t="sections">Sections</button>
+    <button data-t="exam">The Exam</button>
+    <button data-t="errors">Errors</button>
+    <button data-t="plan">Plan</button>
+    <button data-t="res">Resources</button>
+    <button data-t="notes">Notes</button>
+    <button data-t="sync">Sync</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section class="panel show" id="dash">
+    <div class="hero">
+      <div class="card ring-card">
+        <div class="ring">
+          <svg width="118" height="118" viewBox="0 0 118 118">
+            <circle cx="59" cy="59" r="51" fill="none" stroke="var(--line)" stroke-width="10"/>
+            <circle id="ring-prog" cx="59" cy="59" r="51" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" transform="rotate(-90 59 59)" stroke-dasharray="320.4" stroke-dashoffset="320.4"/>
+          </svg>
+          <div class="lbl"><b id="ring-pct" class="num">—</b><span>of target</span></div>
+        </div>
+        <div class="ring-meta">
+          <h3>Readiness</h3>
+          <p id="ring-msg">Log a full test to begin.</p>
+          <div class="scoreline">
+            <div class="s"><b id="latest" class="num">—</b><span>Latest</span></div>
+            <div class="s"><b id="best" class="num">—</b><span>Best</span></div>
+            <div class="s"><b id="target-disp" class="num">—</b><span>Target</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card count-card">
+        <div class="count-row">
+          <div class="count" id="count-ready"><b class="num">—</b><div class="k">days to ready</div></div>
+          <div class="count"><b class="num" id="count-test">—</b><div class="k">days to test day</div></div>
+        </div>
+        <div class="dates">
+          <label>Target score <input type="number" inputmode="numeric" id="set-target" min="400" max="1600" step="10" /></label>
+          <label>Ready-by date <input type="date" id="set-ready" /></label>
+          <label>Test day <input type="date" id="set-test" /></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="chart-head"><div class="eyebrow">Score trajectory</div>
+        <div class="leg"><span><i style="border-color:var(--accent)"></i>Total</span><span><i style="border-color:var(--win);border-top-style:dashed"></i>Target</span></div></div>
+      <div id="chart-host"></div>
+    </div>
+
+    <div class="mini-stats">
+      <div class="card mini"><b class="num" id="m-tests">0</b><div class="k">full tests taken</div></div>
+      <div class="card mini"><b class="num" id="m-hours">0</b><div class="k">hours studied</div></div>
+      <div class="card mini"><b class="num" id="m-open">0</b><div class="k">errors to master</div></div>
+      <div class="card mini"><b class="num" id="m-plan">0%</b><div class="k">plan complete</div></div>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section class="panel" id="log">
+    <div class="eyebrow">Activity log</div>
+    <h2 class="sec">Log what you did</h2>
+    <p class="sec-note">Record a study session, a section-focused test, or a full practice test — each with a comment. Full tests feed your trajectory chart.</p>
+    <div class="addbar">
+      <div><label class="fl">Type</label>
+        <select id="log-type"><option value="study">Studied a section</option><option value="sectest">Section test</option><option value="fulltest">Full practice test</option></select></div>
+      <div><label class="fl">Date</label><input type="date" id="log-date" /></div>
+      <div id="f-section"><label class="fl">Section</label><select id="log-section"></select></div>
+      <div id="f-min"><label class="fl">Minutes</label><input type="number" inputmode="numeric" id="log-min" placeholder="e.g. 45" /></div>
+      <div id="f-result"><label class="fl">Result</label><input type="text" id="log-result" placeholder="e.g. 22/27 or 85%" /></div>
+      <div id="f-name" style="display:none"><label class="fl">Test name</label><input type="text" id="log-name" placeholder="Bluebook Test 4" /></div>
+      <div id="f-rw" style="display:none"><label class="fl">Reading &amp; Writing</label><input type="number" inputmode="numeric" id="log-rw" placeholder="200–800" /></div>
+      <div id="f-math" style="display:none"><label class="fl">Math</label><input type="number" inputmode="numeric" id="log-math" placeholder="200–800" /></div>
+      <div class="wide"><label class="fl">Comment</label><input type="text" id="log-comment" placeholder="How it went, what to revisit…" /></div>
+      <div class="act"><button class="btn" id="log-add">Add to log</button></div>
+    </div>
+    <div class="filters" id="log-filters">
+      <button class="chip on" data-f="all">All</button>
+      <button class="chip" data-f="study">Study</button>
+      <button class="chip" data-f="sectest">Section tests</button>
+      <button class="chip" data-f="fulltest">Full tests</button>
+    </div>
+    <div class="list" id="log-list"></div>
+  </section>
+
+  <!-- SECTIONS -->
+  <section class="panel" id="sections">
+    <div class="eyebrow">Progress by section</div>
+    <h2 class="sec">Where the work is going</h2>
+    <p class="sec-note">Scaled scores come from full tests; the bars show how your study time is spread, so neglected areas stand out.</p>
+    <div class="seccards" id="sec-cards"></div>
+    <div class="card pad" id="sec-domains"></div>
+  </section>
+
+  <!-- EXAM -->
+  <section class="panel" id="exam">
+    <div class="eyebrow">The exam</div>
+    <h2 class="sec">Everything about the digital SAT</h2>
+    <p class="sec-note">Quick reference for the current digital SAT, taken on a laptop or tablet in the Bluebook app.</p>
+
+    <div class="exam-sum">
+      <div class="card mini"><b class="num">2h 14m</b><div class="k">testing time (+10-min break)</div></div>
+      <div class="card mini"><b class="num">98</b><div class="k">questions (94 scored)</div></div>
+      <div class="card mini"><b class="num">2 / 4</b><div class="k">sections / modules</div></div>
+      <div class="card mini"><b class="num">400–1600</b><div class="k">score range</div></div>
+    </div>
+
+    <div class="card infocard">
+      <h3>How it works</h3>
+      <div class="kv"><div class="k">Adaptive</div><div class="v">Each section has two modules. Module 1 is a mix of easy, medium, and hard questions; how you do on it decides whether Module 2 is harder (higher scoring ceiling) or easier. Time is <b>per module</b> — unused minutes don't carry over, and a finished module locks.</div></div>
+      <div class="kv"><div class="k">No penalty</div><div class="v">Wrong answers cost nothing, so never leave a question blank — guess if you must.</div></div>
+      <div class="kv"><div class="k">Pretest items</div><div class="v">4 of the 98 questions (2 per section) are unscored field-test questions. You can't tell which, so treat every question as if it counts.</div></div>
+      <div class="kv"><div class="k">Built-in tools</div><div class="v">On-screen Desmos graphing calculator (all of Math), highlight/annotate, flag-for-review, and a math reference sheet.</div></div>
+      <div class="kv"><div class="k">Seat time</div><div class="v">Plan ~3 hours at the center once check-in and setup are included.</div></div>
+    </div>
+
+    <div class="card infocard">
+      <h3>Reading &amp; Writing <span class="badge b-study">64 min · 54 Q</span></h3>
+      <p class="lede">Two 27-question modules, 32 minutes each (~71 seconds per question). One short passage (25–150 words) per question — topics span literature, history/social studies, science, and the humanities. Four domains, split fairly evenly:</p>
+      <div class="dom"><b>Information &amp; Ideas</b><p>Central ideas, details, inference, and command of evidence — including charts and graphs.</p></div>
+      <div class="dom"><b>Craft &amp; Structure</b><p>Vocabulary in context, a text's structure and purpose, and connecting paired passages.</p></div>
+      <div class="dom"><b>Expression of Ideas</b><p>Revising for clarity and rhetorical goals, plus "rhetorical synthesis" — turning notes into the best sentence.</p></div>
+      <div class="dom"><b>Standard English Conventions</b><p>Grammar, punctuation, and sentence boundaries.</p></div>
+      <div class="focus"><b>Focus first:</b> grammar/punctuation rules and vocabulary-in-context are the fastest, most reliable points. Transitions and rhetorical synthesis show up a lot and are very learnable.</div>
+    </div>
+
+    <div class="card infocard">
+      <h3>Math <span class="badge b-full">70 min · 44 Q</span></h3>
+      <p class="lede">Two 22-question modules, 35 minutes each (~95 seconds per question). About three-quarters are multiple choice; the rest are "student-produced response" — you type the answer. The Desmos calculator is allowed the entire time. Four domains:</p>
+      <div class="dom"><b>Algebra</b><p>Linear equations, inequalities, and systems — the largest share of questions.</p></div>
+      <div class="dom"><b>Advanced Math</b><p>Quadratics, exponentials, and functions / nonlinear relationships.</p></div>
+      <div class="dom"><b>Problem-Solving &amp; Data Analysis</b><p>Ratios, percentages, rates, probability, statistics, and reading graphs/tables.</p></div>
+      <div class="dom"><b>Geometry &amp; Trigonometry</b><p>Angles, area and volume, circles, and right-triangle trig.</p></div>
+      <div class="focus"><b>Focus first:</b> Algebra and Advanced Math make up most of the points — master those before anything else, and get fluent with Desmos to solve and graph fast while avoiding arithmetic slips.</div>
+    </div>
+
+    <div class="card infocard">
+      <h3>Scoring &amp; targets</h3>
+      <div class="kv"><div class="k">Total</div><div class="v">400–1600 = Reading &amp; Writing (200–800) + Math (200–800), with domain subscores in your report.</div></div>
+      <div class="kv"><div class="k">Results</div><div class="v">Usually released about two weeks after test day.</div></div>
+      <div class="kv"><div class="k">Readiness</div><div class="v">College Board's college-ready benchmarks are roughly 480 (R&amp;W) and 530 (Math).</div></div>
+      <p class="lede" style="margin-top:14px">Approximate national score ladder (percentiles shift year to year — treat as a rough guide):</p>
+      <div class="ladder">
+        <div class="lr"><b>~1050</b><span>around the national average</span></div>
+        <div class="lr"><b>~1200</b><span>roughly top third</span></div>
+        <div class="lr"><b>~1350</b><span>roughly top 10%</span></div>
+        <div class="lr"><b>~1450</b><span>roughly top 5%</span></div>
+        <div class="lr"><b>1500+</b><span>roughly top 1–2%</span></div>
+      </div>
+      <div class="focus"><b>Set your real target this way:</b> look up the middle-50% SAT range for each college on Emi's list (on the school's admissions page or Common Data Set) and aim at or above its 75th-percentile number. That's far more useful than any single national figure.</div>
+    </div>
+
+    <div class="card infocard">
+      <h3>What to focus on, test day</h3>
+      <div class="dom"><b>Be clean in Module 1.</b><p>Accuracy early routes you to the higher-scoring Module 2 — don't rush to "bank time."</p></div>
+      <div class="dom"><b>Pace by module, not by question.</b><p>Flag a hard one, move on, and circle back before the module locks.</p></div>
+      <div class="dom"><b>Answer everything.</b><p>There's no penalty for wrong answers.</p></div>
+      <div class="dom"><b>Know the tools beforehand.</b><p>Practice Desmos, highlighting, and flagging in Bluebook so test day feels familiar.</p></div>
+      <div class="dom"><b>Bring a charged device + charger.</b><p>A dead battery mid-module can end the test.</p></div>
+    </div>
+    <p class="foot" style="margin-top:0">Reference figures reflect the current digital SAT. Always confirm specifics on College Board's site.</p>
+  </section>
+
+  <!-- ERRORS -->
+  <section class="panel" id="errors">
+    <div class="eyebrow">Error log</div>
+    <h2 class="sec">Mistakes worth keeping</h2>
+    <p class="sec-note">Name the skill and <em>why</em> it went wrong — that decides the fix. Mark it mastered once you can redo it cleanly.</p>
+    <div class="addbar">
+      <div><label class="fl">Section</label><select id="e-sec"><option>Reading &amp; Writing</option><option>Math</option></select></div>
+      <div class="wide"><label class="fl">Skill / topic</label><input type="text" id="e-skill" placeholder="e.g. Subject-verb agreement" /></div>
+      <div><label class="fl">Why missed</label><select id="e-cat"><option value="content">Content gap</option><option value="careless">Careless</option><option value="misread">Misread</option><option value="timing">Timing</option></select></div>
+      <div class="wide"><label class="fl">Note (optional)</label><input type="text" id="e-note" placeholder="What's the rule / fix?" /></div>
+      <div class="act"><button class="btn" id="e-add">Add error</button></div>
+    </div>
+    <div class="filters" id="e-filters">
+      <button class="chip on" data-f="all">All</button><button class="chip" data-f="open">To master</button>
+      <button class="chip" data-f="content">Content gap</button><button class="chip" data-f="careless">Careless</button>
+      <button class="chip" data-f="misread">Misread</button><button class="chip" data-f="timing">Timing</button>
+    </div>
+    <div class="list" id="errors-list"></div>
+  </section>
+
+  <!-- PLAN -->
+  <section class="panel" id="plan">
+    <div class="eyebrow">Study plan</div>
+    <h2 class="sec">Five weeks to ready</h2>
+    <p class="sec-note">The diagnose → drill → measure loop, timed to your Jul 31 goal. Tap tasks as you go.</p>
+    <div id="plan-host"></div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section class="panel" id="res">
+    <div class="eyebrow">Resources</div>
+    <h2 class="sec">Links &amp; tests</h2>
+    <p class="sec-note">Official prep to start. Add tests, videos, or tutor docs — each with a comment for what it's good for.</p>
+    <div class="res-grid" id="res-grid"></div>
+    <div class="addbar" style="margin-top:16px">
+      <div><label class="fl">Name</label><input type="text" id="r-name" placeholder="Khan algebra unit" /></div>
+      <div><label class="fl">Type</label><select id="r-tag"><option>Resource</option><option>Practice test</option><option>Video</option><option>Other</option></select></div>
+      <div class="wide"><label class="fl">Link</label><input type="url" id="r-url" placeholder="https://…" /></div>
+      <div class="wide"><label class="fl">Comment</label><input type="text" id="r-cmt" placeholder="What it's useful for…" /></div>
+      <div class="act"><button class="btn" id="r-add">Add link</button></div>
+    </div>
+  </section>
+
+  <!-- NOTES -->
+  <section class="panel" id="notes-p">
+    <div class="eyebrow" style="display:flex;justify-content:space-between;align-items:center"><span>Notes</span><span class="saved-tag" id="saved">Saved</span></div>
+    <h2 class="sec">Study notebook</h2>
+    <p class="sec-note">Strategies, formulas, reminders — saved automatically as you type.</p>
+    <textarea id="notes" class="card" placeholder="Jot anything here…"></textarea>
+  </section>
+
+  <!-- SYNC -->
+  <section class="panel" id="sync">
+    <div class="eyebrow">Sync</div>
+    <h2 class="sec">Cross-device sync</h2>
+    <p class="sec-note">Your data is encrypted in this browser with your password, then stored as scrambled text. Without the password it's unreadable.</p>
+    <div class="card pad" id="sync-unconfigured" style="display:none">
+      <h3 style="font-family:'Space Grotesk';font-size:16px;margin-bottom:8px">One-time setup needed</h3>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:12px">Open <code style="background:#f3f4f9;padding:1px 5px;border-radius:5px">index.html</code>, find the <b>SYNC CONFIG</b> block near the top of the script, paste your Supabase URL and anon key, then run this SQL in Supabase's SQL editor.</p>
+      <pre id="sql-block" style="background:#0f1320;color:#e8ebf5;font-size:12px;line-height:1.6;padding:14px 16px;border-radius:10px;overflow:auto;"></pre>
+      <button class="btn ghost sm" id="copy-sql" style="margin-top:10px">Copy SQL</button>
+    </div>
+    <div class="card pad" id="sync-panel" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="grid-column:1/-1"><label class="fl">Sync ID — same on every device</label>
+          <div style="display:flex;gap:8px"><input type="text" id="sync-id" placeholder="paste or generate" /><button class="btn ghost sm" id="gen-id" style="flex:0 0 auto">New</button></div></div>
+        <div style="grid-column:1/-1"><label class="fl">Password — the only key to your data</label><input type="password" id="sync-pw" placeholder="a passphrase you'll remember" /></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);margin-top:14px;cursor:pointer"><input type="checkbox" id="sync-remember" style="width:auto" /> Remember Sync ID &amp; password on this device</label>
+      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;align-items:center">
+        <button class="btn" id="push">Push to cloud ↑</button>
+        <button class="btn ghost" id="pull">Pull from cloud ↓</button>
+        <span id="sync-status" style="font-size:13px;color:var(--muted)"></span>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.6"><b>Push</b> from the device you edited on; <b>Pull</b> on the other to get the latest. Pull replaces this device's data. A lost password can't be recovered, so keep an Export backup.</p>
+    </div>
+  </section>
+
+  <div class="foot">Data lives in this browser. Set up Sync to share across devices, and Export weekly either way.</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DB_KEY='emi_sat_launchpad_v1';
+
+/* ============================================================
+   SYNC CONFIG — paste your Supabase project values here.
+   Both are safe to keep public: data is encrypted with your
+   password before upload. Leave blank to keep sync off.
+   ============================================================ */
+const SYNC = {
+  url:  '',   // e.g. 'https://abcdxyz.supabase.co'
+  key:  '',   // your Supabase "anon"/public key
+  table:'sync_blob'
+};
+/* ============================================================ */
+
+const $=(s,p=document)=>p.querySelector(s);
+const $$=(s,p=document)=>[...p.querySelectorAll(s)];
+
+const SECTIONS={
+ 'Reading & Writing':['Information & Ideas','Craft & Structure','Expression of Ideas','Standard English Conventions'],
+ 'Math':['Algebra','Advanced Math','Problem-Solving & Data','Geometry & Trigonometry']
+};
+const DOMAIN_MAIN={};Object.entries(SECTIONS).forEach(([m,ds])=>{DOMAIN_MAIN[m]=m;ds.forEach(d=>DOMAIN_MAIN[d]=m);});
+
+const PLAN=[
+ {n:'01',title:'Baseline & diagnose',range:'Jun 24 – 30',tasks:[
+   ['w1a','Register for the Aug 22 SAT (deadline Aug 7)'],['w1b','Install Bluebook; do the test preview to learn the tools'],
+   ['w1c','Take Bluebook Test 4 cold — full length, timed'],['w1d','Log every missed question in Errors with a "why"'],['w1e','Pick the top 3 weakest skills to attack']]},
+ {n:'02',title:'Attack weak skills',range:'Jul 1 – 7',tasks:[
+   ['w2a','30–45 min daily of targeted drills in the Question Bank'],['w2b','Watch Khan lessons for each content-gap skill'],
+   ['w2c','Re-do every question missed on the baseline until correct'],['w2d','Keep the error log current']]},
+ {n:'03',title:'Build & measure',range:'Jul 8 – 14',tasks:[
+   ['w3a','Continue targeted drills across R&W and Math'],['w3b','Take Bluebook Test 5 — full, timed'],
+   ['w3c','Check: did the weak-skill error rate drop?'],['w3d','Drill the new gaps that surfaced']]},
+ {n:'04',title:'Pacing & stamina',range:'Jul 15 – 21',tasks:[
+   ['w4a','Timed section drills for anything tagged "Timing"'],['w4b','Take Bluebook Test 6 — full, timed'],
+   ['w4c','Review all open errors; mark the mastered ones'],['w4d','Spend extra time on the lower section']]},
+ {n:'05',title:'Ready check',range:'Jul 22 – 31',tasks:[
+   ['w5a','Final drills on remaining open errors'],['w5b','Take Bluebook Test 7 — readiness check vs target'],
+   ['w5c','At/near target? Ready by Jul 31 ✓'],['w5d','Light review only — no cramming']]},
+ {n:'★',title:'Maintain & rehearse',range:'Aug 1 – 22',tasks:[
+   ['waa','2–3 short drill sessions a week to stay sharp'],['wab','~1 week out: newest full Bluebook test as a dress rehearsal'],
+   ['wac','Test-day kit: device charged, Bluebook updated, ticket, photo ID'],['wad','Aug 22 — test day']]},
+];
+
+const DEFAULT_RES=[
+ ['Bluebook — practice & test app','https://bluebook.collegeboard.org/students/practice','Official','Take full-length adaptive practice tests on the real interface.'],
+ ['Official practice tests','https://satsuite.collegeboard.org/practice/practice-tests','Practice test','All official full-length digital tests.'],
+ ['Khan Academy — Official SAT Prep','https://www.khanacademy.org/digital-sat','Resource','Free official lessons and drills by skill (CB partner).'],
+ ['Student Question Bank','https://satsuitequestionbank.collegeboard.org/','Resource','Filter thousands of official questions by skill & difficulty.'],
+ ['Schoolhouse.world — free tutoring','https://schoolhouse.world/','Resource','Free live small-group SAT tutoring (official CB partner).'],
+ ['OnePrep — free question bank','https://www.oneprep.xyz/','Practice test','4,000+ free practice questions and timed adaptive tests.'],
+ ['Princeton Review — free digital SAT test','https://www.princetonreview.com/college/free-digitalsat-practice-test','Practice test','One free full-length test with a score report (free account).'],
+ ['Kaplan — free SAT practice','https://www.kaptest.com/sat','Practice test','Free full-length practice test and prep events (free account).'],
+ ['Varsity Tutors — free practice','https://www.varsitytutors.com/sat-prep','Practice test','Free diagnostics and practice questions.'],
+ ['1600.io — free video course','https://1600.io/','Video','In-depth free SAT video lessons.'],
+ ['Desmos — test calculator','https://www.desmos.com/calculator','Resource','Practice with the same graphing calculator built into the test.'],
+ ['r/SAT community','https://www.reddit.com/r/Sat/','Other','Student community: tips, score reports, free resources.'],
+ ['SAT registration','https://satsuite.collegeboard.org/sat/registration','Other','Register before the Aug 7 deadline.'],
+ ['Dates & deadlines','https://satsuite.collegeboard.org/sat/dates-deadlines','Other','Confirm test dates and cutoffs.'],
+];
+const DEFAULT_URLS=new Set(DEFAULT_RES.map(r=>r[1]));
+const CATS={content:['Content gap','var(--c-content)'],careless:['Careless','var(--c-careless)'],misread:['Misread','var(--c-misread)'],timing:['Timing','var(--c-timing)']};
+
+function fresh(){return{settings:{target:1400,readyBy:'2026-07-31',testDate:'2026-08-22'},tests:[],activities:[],errors:[],plan:[],resources:DEFAULT_RES.map(r=>({name:r[0],url:r[1],tag:r[2],comment:r[3]})),removedDefaults:[],notes:''};}
+let db;
+function load(){try{const r=localStorage.getItem(DB_KEY);db=r?JSON.parse(r):fresh();}catch(e){db=fresh();}
+  db.tests=db.tests||[];db.activities=db.activities||[];db.errors=db.errors||[];db.plan=db.plan||[];
+  db.resources=db.resources||[];db.removedDefaults=db.removedDefaults||[];
+  DEFAULT_RES.forEach(r=>{if(!db.resources.some(x=>x.url===r[1])&&!db.removedDefaults.includes(r[1]))db.resources.push({name:r[0],url:r[1],tag:r[2],comment:r[3]});});}
+let storageOK=true;try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){storageOK=false;}
+function save(){try{localStorage.setItem(DB_KEY,JSON.stringify(db));}catch(e){}}
+
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2300);}
+const fmtDate=s=>{if(!s)return'';const d=new Date(s+'T00:00');return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});};
+const daysUntil=s=>{if(!s)return null;const d=new Date(s+'T00:00'),n=new Date();n.setHours(0,0,0,0);return Math.round((d-n)/864e5);};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+
+/* Tabs */
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  $$('#tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  const id=b.dataset.t==='notes'?'notes-p':b.dataset.t;
+  $$('.panel').forEach(p=>p.classList.remove('show'));$('#'+id).classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});});
+
+/* Dashboard */
+function sortedTests(){return db.tests.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));}
+function renderDash(){
+  const T=db.settings.target||1400;
+  const st=sortedTests(),tots=st.map(t=>(+t.rw||0)+(+t.math||0));
+  const latest=tots.length?tots[tots.length-1]:null,best=tots.length?Math.max(...tots):null;
+  $('#latest').textContent=latest??'—';$('#best').textContent=best??'—';$('#target-disp').textContent=T;
+  const pct=latest?Math.min(100,Math.round(latest/T*100)):0;
+  $('#ring-pct').textContent=latest?pct+'%':'—';
+  const C=2*Math.PI*51;$('#ring-prog').style.strokeDashoffset=C-(pct/100)*C;
+  $('#ring-prog').style.stroke=pct>=100?'var(--win)':'var(--accent)';
+  $('#ring-msg').textContent=!latest?'Log a full test to begin.':latest>=T?'At target — keep it locked in.':(T-latest)+' points to target. Keep drilling.';
+  const dr=daysUntil(db.settings.readyBy),dt=daysUntil(db.settings.testDate);
+  $('#count-ready').querySelector('b').textContent=dr==null?'—':dr;$('#count-ready').classList.toggle('warn',dr!=null&&dr<7);
+  $('#count-test').textContent=dt==null?'—':dt;
+  $('#set-target').value=T;$('#set-ready').value=db.settings.readyBy||'';$('#set-test').value=db.settings.testDate||'';
+  $('#brand-sub').textContent="Emi's prep · ready by "+(db.settings.readyBy?fmtDate(db.settings.readyBy):'—');
+  $('#m-tests').textContent=db.tests.length;
+  const mins=db.activities.reduce((a,x)=>a+(+x.minutes||0),0);$('#m-hours').textContent=(mins/60).toFixed(mins%60?1:0);
+  $('#m-open').textContent=db.errors.filter(e=>!e.done).length;
+  const totalTasks=PLAN.reduce((a,w)=>a+w.tasks.length,0);$('#m-plan').textContent=Math.round(db.plan.length/totalTasks*100)+'%';
+  renderChart(T);
+}
+function renderChart(T){
+  const host=$('#chart-host'),data=sortedTests().map(t=>({v:(+t.rw||0)+(+t.math||0),date:t.date}));
+  if(!data.length){host.innerHTML='<div class="empty">Your score climb appears here once you log a full test.</div>';return;}
+  const W=800,H=230,padL=46,padR=18,padT=22,padB=32,vals=data.map(d=>d.v);
+  let lo=Math.min(...vals,T)-60,hi=Math.max(...vals,T)+60;
+  lo=Math.max(400,Math.floor(lo/50)*50);hi=Math.min(1600,Math.ceil(hi/50)*50);if(hi-lo<200)hi=Math.min(1600,lo+300);
+  const x=i=>padL+(data.length===1?(W-padL-padR)/2:i*(W-padL-padR)/(data.length-1)),y=v=>padT+(hi-v)/(hi-lo)*(H-padT-padB);
+  let grid='';for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,yy=y(v);
+    grid+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="var(--line)"/><text x="${padL-9}" y="${yy+4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="Space Grotesk">${Math.round(v)}</text>`;}
+  const ty=y(T),tline=`<line x1="${padL}" y1="${ty}" x2="${W-padR}" y2="${ty}" stroke="var(--win)" stroke-width="2" stroke-dasharray="6 5"/><text x="${W-padR}" y="${ty-7}" text-anchor="end" font-size="11" fill="var(--win)" font-weight="600">target ${T}</text>`;
+  let path='',dots='';data.forEach((d,i)=>{const px=x(i),py=y(d.v);path+=(i?'L':'M')+px+' '+py+' ';
+    dots+=`<circle cx="${px}" cy="${py}" r="5" fill="#fff" stroke="var(--accent)" stroke-width="3"/><text x="${px}" y="${py-12}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)" font-family="Space Grotesk">${d.v}</text><text x="${px}" y="${H-padB+18}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${fmtDate(d.date)}</text>`;});
+  const area=`${path}L ${x(data.length-1)} ${H-padB} L ${x(0)} ${H-padB} Z`;
+  host.innerHTML=`<svg id="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Score trajectory"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".14"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>${grid}<path d="${area}" fill="url(#ag)"/>${tline}<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>${dots}</svg>`;
+}
+['set-target','set-ready','set-test'].forEach(id=>$('#'+id).addEventListener('change',e=>{
+  if(id==='set-target')db.settings.target=+e.target.value||1400;
+  if(id==='set-ready')db.settings.readyBy=e.target.value;
+  if(id==='set-test')db.settings.testDate=e.target.value;save();renderDash();renderSections();}));
+
+/* Log */
+function buildSectionSelect(sel){sel.innerHTML=Object.entries(SECTIONS).map(([m,ds])=>
+  `<optgroup label="${m} section"><option>${m}</option>${ds.map(d=>`<option>${d}</option>`).join('')}</optgroup>`).join('');}
+function syncLogFields(){const t=$('#log-type').value;
+  const show=(id,on)=>$('#'+id).style.display=on?'':'none';
+  show('f-section',t!=='fulltest');show('f-min',t!=='fulltest');show('f-result',t==='sectest');
+  show('f-name',t==='fulltest');show('f-rw',t==='fulltest');show('f-math',t==='fulltest');}
+$('#log-type').addEventListener('change',syncLogFields);
+$('#log-add').addEventListener('click',()=>{
+  const t=$('#log-type').value,date=$('#log-date').value||today(),cmt=$('#log-comment').value.trim();
+  if(t==='fulltest'){const rw=+$('#log-rw').value,math=+$('#log-math').value;
+    if(!rw&&!math){toast('Enter at least one section score.');return;}
+    db.tests.push({id:Date.now(),date,name:$('#log-name').value.trim()||'Practice test',rw,math,comment:cmt});
+    $('#log-name').value=$('#log-rw').value=$('#log-math').value='';}
+  else{db.activities.push({id:Date.now(),date,type:t,section:$('#log-section').value,minutes:+$('#log-min').value||0,result:$('#log-result').value.trim(),comment:cmt});
+    $('#log-min').value=$('#log-result').value='';}
+  $('#log-comment').value='';save();renderLog();renderDash();renderSections();toast('Logged.');});
+let logFilter='all';
+$('#log-filters').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;
+  $$('#log-filters .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');logFilter=b.dataset.f;renderLog();});
+function renderLog(){
+  const host=$('#log-list');
+  let items=[...db.tests.map(t=>({kind:'fulltest',...t})),...db.activities.map(a=>({kind:a.type,...a}))]
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id-a.id);
+  if(logFilter!=='all')items=items.filter(i=>i.kind===logFilter);
+  if(!items.length){host.innerHTML='<div class="empty">'+(db.tests.length||db.activities.length?'Nothing in this filter.':'Nothing logged yet. Add your first session above.')+'</div>';return;}
+  host.innerHTML=items.map(i=>{
+    let badge,title,meta='',right='';
+    if(i.kind==='fulltest'){badge='<span class="badge b-full">Full test</span>';title=esc(i.name||'Practice test');
+      const tot=(+i.rw||0)+(+i.math||0);meta=`R&amp;W ${i.rw||'–'} · Math ${i.math||'–'}`;right=`<span class="scorebig">${tot||'–'}</span>`;}
+    else if(i.kind==='sectest'){badge='<span class="badge b-sectest">Section test</span>';title=esc(i.section);
+      meta=(i.minutes?i.minutes+' min':'');if(i.result)right=`<span class="scorebig">${esc(i.result)}</span>`;}
+    else{badge='<span class="badge b-study">Study</span>';title=esc(i.section);meta=i.minutes?i.minutes+' min':'';}
+    return `<div class="item"><div class="body"><div class="top"><span class="date-tag">${fmtDate(i.date)}</span>${badge}<span class="title">${title}</span></div>
+      ${meta?`<div class="meta">${meta}</div>`:''}${i.comment?`<div class="cmt">${esc(i.comment)}</div>`:''}</div>
+      ${right}<button class="del" data-kind="${i.kind}" data-id="${i.id}" aria-label="Delete">×</button></div>`;}).join('');
+  $$('#log-list .del').forEach(b=>b.onclick=()=>{const id=b.dataset.id;
+    if(b.dataset.kind==='fulltest')db.tests=db.tests.filter(x=>x.id!=id);else db.activities=db.activities.filter(x=>x.id!=id);
+    save();renderLog();renderDash();renderSections();});
+}
+
+/* Sections */
+function renderSections(){
+  const st=sortedTests(),last=st[st.length-1],prev=st[st.length-2];
+  const cards=['Reading & Writing','Math'].map(m=>{
+    const k=m==='Math'?'math':'rw';
+    const cur=last?+last[k]||0:null,pv=prev?+prev[k]||0:null;
+    const best=st.length?Math.max(...st.map(t=>+t[k]||0)):null;
+    let delta='';if(cur!=null&&pv!=null){const d=cur-pv;delta=`<span class="delta ${d>0?'up':d<0?'down':'flat'}">${d>0?'▲ +'+d:d<0?'▼ '+d:'—'}</span>`;}
+    return `<div class="card seccard"><h3>${m}</h3><div class="big"><b class="num">${cur??'—'}</b>${delta}</div>
+      <div class="sub">${best!=null?'Best '+best+' · scaled 200–800':'No full-test score yet'}</div></div>`;}).join('');
+  $('#sec-cards').innerHTML=cards;
+
+  const stats={};db.activities.forEach(a=>{const s=a.section||'—';const o=stats[s]||(stats[s]={min:0,n:0,last:''});o.min+=(+a.minutes||0);o.n++;if((a.date||'')>o.last)o.last=a.date;});
+  const allLabels=[];Object.entries(SECTIONS).forEach(([m,ds])=>{allLabels.push(m,...ds);});
+  const maxMin=Math.max(1,...allLabels.map(l=>stats[l]?stats[l].min:0));
+  let html='';Object.entries(SECTIONS).forEach(([m,ds])=>{
+    html+=`<div class="domgroup"><div class="gh">${m}</div>`;
+    [m,...ds].forEach((lbl,i)=>{const s=stats[lbl]||{min:0,n:0,last:''};
+      const name=i===0?'Whole section':lbl;
+      const w=Math.round(s.min/maxMin*100);
+      html+=`<div class="domrow"><div><div class="dn">${name}</div><div class="dm">${s.n} ${s.n===1?'entry':'entries'}${s.last?' · last '+fmtDate(s.last):''}</div></div>
+        <div class="domstat">${s.min?s.min+' min':'—'}</div><div class="dbar"><i style="width:${w}%"></i></div></div>`;});
+    html+='</div>';});
+  $('#sec-domains').innerHTML=html;
+}
+
+/* Errors */
+let efilter='all';
+$('#e-add').addEventListener('click',()=>{const skill=$('#e-skill').value.trim();if(!skill){toast('Name the skill or topic.');return;}
+  db.errors.push({id:Date.now(),date:today(),sec:$('#e-sec').value,skill,cat:$('#e-cat').value,note:$('#e-note').value.trim(),done:false});
+  $('#e-skill').value=$('#e-note').value='';save();renderErrors();renderDash();});
+$('#e-filters').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;
+  $$('#e-filters .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');efilter=b.dataset.f;renderErrors();});
+function renderErrors(){const host=$('#errors-list');
+  let rows=db.errors.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(efilter==='open')rows=rows.filter(e=>!e.done);else if(efilter!=='all')rows=rows.filter(e=>e.cat===efilter);
+  if(!rows.length){host.innerHTML='<div class="empty">'+(db.errors.length?'Nothing in this filter.':'No errors yet. Every miss you record is a point you won\'t lose twice.')+'</div>';return;}
+  host.innerHTML=rows.map(e=>{const c=CATS[e.cat]||CATS.content;
+    return `<div class="item"><div class="body"><div class="top"><span class="date-tag">${fmtDate(e.date)}</span><span class="badge" style="background:#f3f4f9;color:${c[1]}">${c[0]}</span>
+      <span class="title"><span class="cat-dot" style="background:${c[1]}"></span>${esc(e.skill)}</span></div>
+      <div class="meta">${esc(e.sec)}${e.note?' · '+esc(e.note):''}</div></div>
+      <button class="statusbtn ${e.done?'done':''}" data-id="${e.id}">${e.done?'✓ Mastered':'Mark done'}</button>
+      <button class="del" data-id="${e.id}" aria-label="Delete">×</button></div>`;}).join('');
+  $$('#errors-list .statusbtn').forEach(b=>b.onclick=()=>{const e=db.errors.find(x=>x.id==b.dataset.id);e.done=!e.done;save();renderErrors();renderDash();});
+  $$('#errors-list .del').forEach(b=>b.onclick=()=>{db.errors=db.errors.filter(x=>x.id!=b.dataset.id);save();renderErrors();renderDash();});
+}
+
+/* Plan */
+function renderPlan(){const host=$('#plan-host');
+  host.innerHTML=PLAN.map(w=>{const done=w.tasks.filter(t=>db.plan.includes(t[0])).length,pct=Math.round(done/w.tasks.length*100);
+    return `<div class="card pad week"><div class="week-head"><span class="week-num">${w.n}</span><h3>${w.title}</h3><span class="dr">${w.range}</span></div>
+      <div class="wbar"><i style="width:${pct}%"></i></div><div style="margin-top:6px">${w.tasks.map(t=>{const on=db.plan.includes(t[0]);
+        return `<div class="task ${on?'done':''}" data-id="${t[0]}"><span class="box"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">${t[1]}</span></div>`;}).join('')}</div></div>`;}).join('');
+  $$('#plan-host .task').forEach(el=>el.onclick=()=>{const id=el.dataset.id;
+    if(db.plan.includes(id))db.plan=db.plan.filter(x=>x!==id);else db.plan.push(id);save();renderPlan();renderDash();});
+}
+
+/* Resources */
+$('#r-add').addEventListener('click',()=>{let url=$('#r-url').value.trim(),name=$('#r-name').value.trim();
+  if(!name||!url){toast('Add a name and a link.');return;}if(!/^https?:\/\//.test(url))url='https://'+url;
+  db.resources.push({name,url,tag:$('#r-tag').value,comment:$('#r-cmt').value.trim()});
+  $('#r-name').value=$('#r-url').value=$('#r-cmt').value='';save();renderRes();toast('Saved.');});
+function renderRes(){$('#res-grid').innerHTML=db.resources.map((r,i)=>
+  `<div class="res"><a class="rtop" href="${esc(r.url)}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+    <span class="ri">${esc((r.name[0]||'•').toUpperCase())}</span>
+    <span style="flex:1;min-width:0"><b>${esc(r.name)}</b><span class="rurl">${esc(r.url.replace(/^https?:\/\//,''))}</span></span>
+    ${r.tag?`<span class="badge b-study">${esc(r.tag)}</span>`:''}<span class="del res-del" data-i="${i}">×</span></a>
+    ${r.comment?`<div class="rcmt">${esc(r.comment)}</div>`:''}</div>`).join('');
+  $$('#res-grid .res-del').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();
+    const r=db.resources[+b.dataset.i];if(r&&DEFAULT_URLS.has(r.url)&&!db.removedDefaults.includes(r.url))db.removedDefaults.push(r.url);
+    db.resources.splice(+b.dataset.i,1);save();renderRes();});
+}
+
+/* Notes */
+const nEl=$('#notes');let nT;
+nEl.addEventListener('input',()=>{db.notes=nEl.value;clearTimeout(nT);nT=setTimeout(()=>{save();const s=$('#saved');s.classList.add('show');setTimeout(()=>s.classList.remove('show'),1100);},500);});
+
+/* Encrypted cloud sync (PBKDF2 + AES-GCM) */
+const PW_KEY='emi_sat_sync_pw',ID_KEY='emi_sat_sync_id';
+const b64=u=>btoa(String.fromCharCode(...u));const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function deriveKey(password,salt){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+async function encryptObj(obj,password){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(password,salt),ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(obj))));
+  const out=new Uint8Array(salt.length+iv.length+ct.length);out.set(salt);out.set(iv,16);out.set(ct,28);return b64(out);}
+async function decryptStr(blob,password){const raw=unb64(blob),salt=raw.slice(0,16),iv=raw.slice(16,28),ct=raw.slice(28);
+  const key=await deriveKey(password,salt);return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct)));}
+const syncReady=()=>SYNC.url&&SYNC.key;
+const sStatus=(m,c)=>{const e=$('#sync-status');if(e){e.textContent=m;e.style.color=c||'var(--muted)';}};
+async function cloudUpsert(id,blob){const r=await fetch(`${SYNC.url}/rest/v1/${SYNC.table}`,{method:'POST',
+    headers:{'apikey':SYNC.key,'Authorization':'Bearer '+SYNC.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify([{id,blob,updated_at:new Date().toISOString()}])});if(!r.ok)throw new Error('HTTP '+r.status);}
+async function cloudFetch(id){const r=await fetch(`${SYNC.url}/rest/v1/${SYNC.table}?id=eq.${encodeURIComponent(id)}&select=blob,updated_at`,
+    {headers:{'apikey':SYNC.key,'Authorization':'Bearer '+SYNC.key}});if(!r.ok)throw new Error('HTTP '+r.status);return (await r.json())[0]||null;}
+async function doPush(){const id=$('#sync-id').value.trim(),pw=$('#sync-pw').value;if(!id||!pw){toast('Enter a Sync ID and password.');return;}
+  sStatus('Encrypting…');try{const blob=await encryptObj(db,pw);await cloudUpsert(id,blob);rememberCreds(id,pw);
+    sStatus('Pushed '+new Date().toLocaleTimeString(),'var(--win)');toast('Uploaded (encrypted).');}catch(e){sStatus('Push failed: '+e.message,'var(--c-content)');}}
+async function doPull(){const id=$('#sync-id').value.trim(),pw=$('#sync-pw').value;if(!id||!pw){toast('Enter a Sync ID and password.');return;}
+  if(!confirm('Pull replaces the data on THIS device with the cloud copy. Continue?'))return;sStatus('Downloading…');
+  try{const row=await cloudFetch(id);if(!row){sStatus('No cloud data for that Sync ID yet.','var(--c-careless)');return;}
+    let data;try{data=await decryptStr(row.blob,pw);}catch(x){sStatus('Wrong password — could not decrypt.','var(--c-content)');return;}
+    db=Object.assign(fresh(),data);save();rememberCreds(id,pw);boot();sStatus('Pulled '+new Date().toLocaleTimeString(),'var(--win)');toast('Restored from cloud.');}
+  catch(e){sStatus('Pull failed: '+e.message,'var(--c-content)');}}
+function rememberCreds(id,pw){if($('#sync-remember').checked){localStorage.setItem(ID_KEY,id);localStorage.setItem(PW_KEY,pw);}else{localStorage.removeItem(ID_KEY);localStorage.removeItem(PW_KEY);}}
+function initSync(){const conf=syncReady();
+  $('#sync-unconfigured').style.display=conf?'none':'block';$('#sync-panel').style.display=conf?'block':'none';
+  $('#sql-block').textContent=`create table if not exists public.${SYNC.table} (\n  id text primary key,\n  blob text,\n  updated_at timestamptz default now()\n);\nalter table public.${SYNC.table} enable row level security;\ncreate policy "read"   on public.${SYNC.table} for select to anon using (true);\ncreate policy "insert" on public.${SYNC.table} for insert to anon with check (true);\ncreate policy "update" on public.${SYNC.table} for update to anon using (true) with check (true);`;
+  $('#copy-sql').onclick=()=>{navigator.clipboard.writeText($('#sql-block').textContent);toast('SQL copied.');};
+  if(!conf)return;
+  const sid=localStorage.getItem(ID_KEY),spw=localStorage.getItem(PW_KEY);
+  if(sid)$('#sync-id').value=sid;if(spw){$('#sync-pw').value=spw;$('#sync-remember').checked=true;}
+  $('#gen-id').onclick=()=>{$('#sync-id').value=(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2));};
+  $('#push').onclick=doPush;$('#pull').onclick=doPull;
+}
+
+/* Import / Export */
+$('#export').onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sat-launchpad-backup.json';a.click();toast('Backup downloaded.');};
+$('#import').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{const d=JSON.parse(rd.result);db=Object.assign(fresh(),d);save();boot();toast('Data restored.');}catch(x){toast('That file could not be read.');}};rd.readAsText(f);};
+
+function boot(){
+  buildSectionSelect($('#log-section'));syncLogFields();
+  if(!$('#log-date').value)$('#log-date').value=today();
+  $('#notes').value=db.notes||'';
+  renderDash();renderLog();renderSections();renderErrors();renderPlan();renderRes();initSync();
+}
+load();boot();
+if(!storageOK)setTimeout(()=>toast("This preview can't save — it works once on GitHub Pages."),700);
+</script>
+</body>
+</html>
